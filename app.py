@@ -11,13 +11,19 @@ def file_exists(file_path):
 
 # Function to calculate missing variable
 def calculate_missing(rf, beta, rm, expected_return):
-    if rf is None:
-        return expected_return - beta * (rm - rf)  # Solve for Rf
-    elif beta is None:
-        return (expected_return - rf) / (rm - rf)  # Solve for Beta
-    elif rm is None:
-        return (expected_return - rf) / beta + rf  # Solve for Market Return
-    return expected_return
+    try:
+        if rf is None and beta is not None and rm is not None and expected_return is not None:
+            return expected_return - beta * (rm - rf)  # Solve for Rf
+        elif beta is None and rf is not None and rm is not None and expected_return is not None:
+            return (expected_return - rf) / (rm - rf)  # Solve for Beta
+        elif rm is None and rf is not None and beta is not None and expected_return is not None:
+            return (expected_return - rf) / beta + rf  # Solve for Market Return
+        elif expected_return is None and rf is not None and beta is not None and rm is not None:
+            return rf + beta * (rm - rf)  # Solve for Expected Return
+        else:
+            return None  # Invalid case
+    except TypeError:
+        return None
 
 # Function to format numbers dynamically
 def format_number(value):
@@ -38,10 +44,7 @@ st.markdown("## Capital Asset Pricing Model (CAPM)")
 # Selection for known and unknown variable
 variable_to_find = st.selectbox("Select the variable to calculate:", ["Expected Return", "Beta (β)", "Market Return (Rm)", "Risk-Free Rate (Rf)"])
 
-rf = None
-beta = None
-rm = None
-expected_return = None
+rf, beta, rm, expected_return = None, None, None, None
 
 if variable_to_find != "Risk-Free Rate (Rf)":
     rf = st.number_input("Risk-Free Rate (Rf) in %:", min_value=0.0, step=0.1, value=2.0) / 100
@@ -55,14 +58,18 @@ if variable_to_find != "Expected Return":
 if st.button("Calculate"):
     with st.spinner("Calculating..."):
         time.sleep(2)  # Simulating Processing Time
-        result = calculate_missing(rf, beta, rm, expected_return) * 100
-        st.success(f"{variable_to_find}: {format_number(result)}%")
+        result = calculate_missing(rf, beta, rm, expected_return)
         
-        # Show Mario GIF
-        show_mario_gif()
+        if result is not None:
+            result *= 100  # Convert to percentage
+            st.success(f"{variable_to_find}: {format_number(result)}%")
+            # Show Mario GIF
+            show_mario_gif()
+        else:
+            st.error("Invalid input combination. Please check your values.")
 
     # Plot Security Market Line (SML)
-    if rm is not None:
+    if rm is not None and rf is not None:
         beta_range = np.linspace(0, 2, 100)
         sml = rf * 100 + beta_range * (rm * 100 - rf * 100)
         
@@ -79,7 +86,7 @@ if st.button("Calculate"):
     # Bar Chart of Inputs
     st.subheader("Input Comparison")
     chart_data = {"Market Return (%)": rm * 100 if rm is not None else 0,
-                  "Expected Return (%)": result}
+                  "Expected Return (%)": result if result is not None else 0}
     st.bar_chart(chart_data)
 
 # Syndicate 16 Signature
