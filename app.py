@@ -11,14 +11,17 @@ def file_exists(file_path):
 
 # Function to calculate missing variable
 def calculate_missing(rf, beta, rm, expected_return):
-    if rf is None and beta is not None and rm is not None and expected_return is not None:
-        return expected_return - beta * (rm - rf)  # Solve for Rf
-    elif beta is None and rf is not None and rm is not None and expected_return is not None:
-        return (expected_return - rf) / (rm - rf)  # Solve for Beta
-    elif rm is None and rf is not None and beta is not None and expected_return is not None:
-        return (expected_return - rf) / beta + rf  # Solve for Market Return
-    elif expected_return is None and rf is not None and beta is not None and rm is not None:
-        return rf + beta * (rm - rf)  # Solve for Expected Return
+    try:
+        if rf is None and beta is not None and rm is not None and expected_return is not None:
+            return expected_return - beta * (rm - rf)  # Solve for Rf
+        elif beta is None and rf is not None and rm is not None and expected_return is not None:
+            return (expected_return - rf) / (rm - rf)  # Solve for Beta
+        elif rm is None and rf is not None and beta is not None and expected_return is not None:
+            return (expected_return - rf) / beta + rf  # Solve for Market Return
+        elif expected_return is None and rf is not None and beta is not None and rm is not None:
+            return rf + beta * (rm - rf)  # Solve for Expected Return
+    except TypeError:
+        return None  # If inputs are invalid
     return None  # If input combination is incorrect
 
 # Function to format numbers dynamically
