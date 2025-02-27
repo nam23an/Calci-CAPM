@@ -11,13 +11,15 @@ def file_exists(file_path):
 
 # Function to calculate missing variable
 def calculate_missing(rf, beta, rm, expected_return):
-    if rf is None:
-        return expected_return / (1 + beta * (rm - 1))
-    elif beta is None:
-        return (expected_return - rf) / (rm - rf)
-    elif rm is None:
-        return (expected_return - rf) / beta + rf
-    return expected_return
+    if rf is None and beta is not None and rm is not None and expected_return is not None:
+        return expected_return - beta * (rm - rf)  # Solve for Rf
+    elif beta is None and rf is not None and rm is not None and expected_return is not None:
+        return (expected_return - rf) / (rm - rf)  # Solve for Beta
+    elif rm is None and rf is not None and beta is not None and expected_return is not None:
+        return (expected_return - rf) / beta + rf  # Solve for Market Return
+    elif expected_return is None and rf is not None and beta is not None and rm is not None:
+        return rf + beta * (rm - rf)  # Solve for Expected Return
+    return None  # If input combination is incorrect
 
 # Function to format numbers dynamically
 def format_number(value):
@@ -55,11 +57,15 @@ if variable_to_find != "Expected Return":
 if st.button("Calculate"):
     with st.spinner("Calculating..."):
         time.sleep(2)  # Simulating Processing Time
-        result = calculate_missing(rf, beta, rm, expected_return) * 100
-        st.success(f"{variable_to_find}: {format_number(result)}%")
+        result = calculate_missing(rf, beta, rm, expected_return)
         
-        # Show Mario GIF
-        show_mario_gif()
+        if result is not None:
+            result *= 100
+            st.success(f"{variable_to_find}: {format_number(result)}%")
+            # Show Mario GIF
+            show_mario_gif()
+        else:
+            st.error("Invalid input combination. Please check your values.")
 
     # Plot Security Market Line (SML)
     if rf is not None and rm is not None:
@@ -68,7 +74,7 @@ if st.button("Calculate"):
         
         fig, ax = plt.subplots()
         ax.plot(beta_range, sml, label="Security Market Line (SML)", color="blue")
-        if beta is not None:
+        if beta is not None and result is not None:
             ax.scatter(beta, result, color='red', label="Your Asset")
         ax.set_xlabel("Beta (β)")
         ax.set_ylabel("Expected Return (%)")
@@ -78,9 +84,11 @@ if st.button("Calculate"):
 
     # Bar Chart of Inputs
     st.subheader("Input Comparison")
-    chart_data = {"Risk-Free Rate (%)": rf * 100 if rf is not None else 0,
-                  "Market Return (%)": rm * 100 if rm is not None else 0,
-                  "Expected Return (%)": result}
+    chart_data = {
+        "Risk-Free Rate (%)": rf * 100 if rf is not None else 0,
+        "Market Return (%)": rm * 100 if rm is not None else 0,
+        "Expected Return (%)": result if result is not None else 0
+    }
     st.bar_chart(chart_data)
 
 # Syndicate 16 Signature
