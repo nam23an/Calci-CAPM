@@ -10,11 +10,13 @@ def file_exists(file_path):
     return os.path.exists(file_path)
 
 # Function to calculate missing variable
-def calculate_missing(beta, rm, expected_return):
-    if beta is None:
-        return expected_return / rm  # Solve for Beta
+def calculate_missing(rf, beta, rm, expected_return):
+    if rf is None:
+        return expected_return - beta * (rm - rf)  # Solve for Rf
+    elif beta is None:
+        return (expected_return - rf) / (rm - rf)  # Solve for Beta
     elif rm is None:
-        return expected_return / beta  # Solve for Market Return
+        return (expected_return - rf) / beta + rf  # Solve for Market Return
     return expected_return
 
 # Function to format numbers dynamically
@@ -34,12 +36,15 @@ st.title("CAPM Calculator")
 st.markdown("## Capital Asset Pricing Model (CAPM)")
 
 # Selection for known and unknown variable
-variable_to_find = st.selectbox("Select the variable to calculate:", ["Expected Return", "Beta (β)", "Market Return (Rm)"])
+variable_to_find = st.selectbox("Select the variable to calculate:", ["Expected Return", "Beta (β)", "Market Return (Rm)", "Risk-Free Rate (Rf)"])
 
+rf = None
 beta = None
 rm = None
 expected_return = None
 
+if variable_to_find != "Risk-Free Rate (Rf)":
+    rf = st.number_input("Risk-Free Rate (Rf) in %:", min_value=0.0, step=0.1, value=2.0) / 100
 if variable_to_find != "Beta (β)":
     beta = st.number_input("Beta (β):", min_value=0.0, step=0.1, value=1.0)
 if variable_to_find != "Market Return (Rm)":
@@ -50,7 +55,7 @@ if variable_to_find != "Expected Return":
 if st.button("Calculate"):
     with st.spinner("Calculating..."):
         time.sleep(2)  # Simulating Processing Time
-        result = calculate_missing(beta, rm, expected_return) * 100
+        result = calculate_missing(rf, beta, rm, expected_return) * 100
         st.success(f"{variable_to_find}: {format_number(result)}%")
         
         # Show Mario GIF
@@ -59,7 +64,7 @@ if st.button("Calculate"):
     # Plot Security Market Line (SML)
     if rm is not None:
         beta_range = np.linspace(0, 2, 100)
-        sml = beta_range * (rm * 100)
+        sml = rf * 100 + beta_range * (rm * 100 - rf * 100)
         
         fig, ax = plt.subplots()
         ax.plot(beta_range, sml, label="Security Market Line (SML)", color="blue")
