@@ -12,9 +12,7 @@ def file_exists(file_path):
 # Function to calculate missing variable
 def calculate_missing(rf, beta, rm, expected_return):
     try:
-        if rf is None and beta is not None and rm is not None and expected_return is not None:
-            return expected_return - beta * (rm - rf)  # Solve for Rf
-        elif beta is None and rf is not None and rm is not None and expected_return is not None:
+        if beta is None and rf is not None and rm is not None and expected_return is not None:
             return (expected_return - rf) / (rm - rf)  # Solve for Beta
         elif rm is None and rf is not None and beta is not None and expected_return is not None:
             return (expected_return - rf) / beta + rf  # Solve for Market Return
@@ -42,12 +40,11 @@ st.title("CAPM Calculator")
 st.markdown("## Capital Asset Pricing Model (CAPM)")
 
 # Selection for known and unknown variable
-variable_to_find = st.selectbox("Select the variable to calculate:", ["Expected Return", "Beta (β)", "Market Return (Rm)", "Risk-Free Rate (Rf)"])
+variable_to_find = st.selectbox("Select the variable to calculate:", ["Expected Return", "Beta (β)", "Market Return (Rm)"])
 
 rf, beta, rm, expected_return = None, None, None, None
 
-if variable_to_find != "Risk-Free Rate (Rf)":
-    rf = st.number_input("Risk-Free Rate (Rf) in %:", min_value=0.0, step=0.1, value=2.0) / 100
+rf = st.number_input("Risk-Free Rate (Rf) in %:", min_value=0.0, step=0.1, value=2.0) / 100
 if variable_to_find != "Beta (β)":
     beta = st.number_input("Beta (β):", min_value=0.0, step=0.1, value=1.0)
 if variable_to_find != "Market Return (Rm)":
